@@ -8,6 +8,7 @@ import sys
 channel = 0
 cam = cv2.VideoCapture(0)  # Define camera
 colors = {0: "Blue", 1: "Green", 2: "Red"}
+use_cmap = False
 
 img = resize(grab_frame(cam, channel), 0.9)
 image = np.stack([img, img, img], axis=2)
@@ -24,6 +25,9 @@ while (True):
     key = cv2.waitKey(1) & 0xFF
     if key == ord(']'):
         break
+    elif key == ord('9'):
+        use_cmap = not use_cmap
+        print("UseCmap " + str(use_cmap))
     elif key == ord('0'):
         channel = np.mod(channel+1, 3)
         print("ColorChannel " + str(channel))
@@ -39,16 +43,18 @@ while (True):
         image[:, :, channel] = img * mask
     else:
         image[:, :, channel] = img
+
     zero_channels = [*range(3)]
     zero_channels.pop(channel)
     image[:, :, zero_channels] = 0
 
 
-
-    cv2.rectangle(image, (0, 0), (20, 120), (0, 0, 0), -1)
+    cv2.rectangle(image, (0, 0), (120, 40), (0, 0, 0), -1)
     cv2.putText(image, colors[channel], (10, 30),
                 fontFace=cv2.QT_FONT_NORMAL, fontScale=0.75, color=(255,255,255))
 
+    if use_cmap:
+        image = cv2.applyColorMap(image[:,:,channel], cv2.COLORMAP_JET)
     cv2.imshow('ColorChannels', image)
 
 
