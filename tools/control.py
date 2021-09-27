@@ -37,12 +37,3 @@ def timer(fun):
 
     return timed_fun
 
-symbol_library = {0: '\\',
-                  1: '|',
-                  2: '/',
-                  3: '|'}
-def time_symbol():
-    t = round(time.time()*10)
-    tmod = t % 4
-    return symbol_library[tmod]
-

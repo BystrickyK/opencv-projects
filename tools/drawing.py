@@ -6,7 +6,7 @@ def annotate_objects(img, objects, object_str, color_idx=1):
     color = plt.get_cmap('hsv', 5)(color_idx)
     color = (np.array(color)*255)[:-1]
     color = [int(c) for c in color]
-    print("\t{} detected: {}".format(object_str, len(objects)))
+    # print("\t{} detected: {}".format(object_str, len(objects)))
     for i, (x, y, w, h) in enumerate(objects):
         annotation_str = "{} #{}".format(
             object_str, i + 1)
