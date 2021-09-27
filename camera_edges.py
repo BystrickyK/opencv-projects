@@ -30,6 +30,9 @@ erode_first = True  # Controls the order of morph. operations
 pause = False
 edge_boost = 1  # Multiplies pixel values to boost weak edges
 
+cv2.namedWindow("EdgeDetector", cv2.WND_PROP_FULLSCREEN);
+cv2.setWindowProperty("EdgeDetector", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
+
 # %% Camera loop
 while (True):
     start_time = time()

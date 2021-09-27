@@ -15,6 +15,9 @@ image = np.stack([img, img, img], axis=2)
 
 threshold = 0
 
+cv2.namedWindow("ColorChannels", cv2.WND_PROP_FULLSCREEN);
+cv2.setWindowProperty("ColorChannels", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
+
 # %% Camera loop
 while (True):
     # with timer_manager():

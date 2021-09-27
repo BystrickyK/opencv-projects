@@ -12,6 +12,10 @@ cam = cv2.VideoCapture(0)  # Define camera
 scale_camera = 0.9
 scale_classifier = 0.4
 scale_facial = 0.5
+
+cv2.namedWindow("FaceDetector", cv2.WND_PROP_FULLSCREEN);
+cv2.setWindowProperty("FaceDetector", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
+
 while (True):
 # with timer_manager():
     start_time = time()
@@ -44,10 +48,10 @@ while (True):
     annotation_str = "FPS: {:.2f}".format(fps)
     cv2.putText(img, annotation_str, (10, 30),
         fontFace=cv2.QT_FONT_NORMAL, fontScale=0.75, color=(255,255,255))
-    cv2.imshow('Image', img)
+    cv2.imshow('FaceDetector', img)
 
     # cv2.imshow('frame', edges_horizontal)q;q
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(1) & 0xFF == ord(']'):
         break
 
 cam.release()
