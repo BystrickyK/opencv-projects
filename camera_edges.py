@@ -7,46 +7,50 @@ from tools.processing import resize, grab_frame
 import matplotlib.pyplot as plt
 import sys
 
-def boost_edges(edges, boost):
-    edges = edges.astype('uint16') * boost
-    edges = np.clip(edges, 0, 255).astype('uint8')
-    return edges
+def boost_image(image, boost):
+    image = image.astype('uint16') * boost
+    image = np.clip(image, 0, 255).astype('uint8')
+    return image
 
+mode = 0  # Visualization mode
+invert = False
 
-mode = 4
-channel = 0
+channel = 0  # Color channel
+colors = {0: "Blue", 1: "Green", 2: "Red"}
 
-cam = cv2.VideoCapture(0)  # Define camera
+cam = cv2.VideoCapture(0)  # Choose camera device
 
-blur_factor = 5
+blur_factor = 5  # side length of the smoothing kernel
 threshold = 0 # Larger number -> fewer edges
 
-erode_str = 1
-dilate_str = 1
-erode_first = True
+erode_str = 1  # Size of the erosion kernel
+dilate_str = 1  # Size of the dilation kernel
+erode_first = True  # Controls the order of morph. operations
 
-invert = False
 pause = False
-edge_boost = 1
+edge_boost = 1  # Multiplies pixel values to boost weak edges
 
 # %% Camera loop
 while (True):
     start_time = time()
-    # with timer_manager():
 
-    # with timer_manager("FrameGrab"):
+    # Capture an image
     img = resize(grab_frame(cam, channel), 0.9)
+
+    # Blur the image to suppress noise and weak edges
     img = cv2.GaussianBlur(img, (blur_factor, blur_factor), 0)
 
-    # with timer_manager("EdgeDetect"):
+    # Edge detection - horizontal
     img_edge_h, img_edge_h_mask = detect_edges(img, threshold, 'h')
     img_edge_h = np.clip(img_edge_h, 0, 255)
     img_edge_h = img_edge_h * img_edge_h_mask
+
+    # Edge detection - vertical
     img_edge_v, img_edge_v_mask = detect_edges(img, threshold, 'v')
     img_edge_v = np.clip(img_edge_v, 0, 255)
     img_edge_v = img_edge_v * img_edge_v_mask
 
-    # with timer_manager("Dilating"):
+    # Morphological operations
     kernel_erode = np.ones((erode_str, erode_str))
     kernel_dilate = np.ones((dilate_str, dilate_str))
     if erode_first:
@@ -58,10 +62,11 @@ while (True):
         img_edge_h = cv2.erode(img_edge_h, kernel_erode)
         img_edge_v = cv2.erode(img_edge_v, kernel_erode)
 
-    img_edge_h = boost_edges(img_edge_h, edge_boost)
-    img_edge_v = boost_edges(img_edge_v, edge_boost)
+    # Edge boosting
+    img_edge_h = boost_image(img_edge_h, edge_boost)
+    img_edge_v = boost_image(img_edge_v, edge_boost)
 
-    # with timer_manager("Draw"):
+    # Select visualization mode
     if mode == 0:
         image = np.stack([img_edge_h, np.zeros_like(img), img_edge_v], axis=2)
     elif mode == 1:
@@ -87,12 +92,7 @@ while (True):
         edges = np.max([img_edge_h, img_edge_v], axis=0)
         image = np.stack([edges, edges, edges], axis=2)
 
-    if not pause:
-        if invert:
-            cv2.imshow('EdgeDetector', np.clip(255-image, 0, 255))
-        else:
-            cv2.imshow('EdgeDetector', image)
-
+    # Keyboard user interface
     key = cv2.waitKey(1) & 0xFF
     if key == ord(']'):
         break
@@ -142,16 +142,22 @@ while (True):
         pause = not pause
         print("Pause " + str(pause))
 
+    # FPS counter
     end_time = time()
     fps = 1/(end_time-start_time)
-    cv2.rectangle(img, (0, 0), (150, 40), (0, 0, 0), -1)
-    annotation_str = "FPS: {:.2f}".format(fps)
-    cv2.putText(img, annotation_str, (10, 30),
-                fontFace=cv2.QT_FONT_NORMAL, fontScale=0.75, color=(255,255,255))
+    annotation_str = "FPS: {:.2f} | Mode: {} | Channel: {} |" \
+                     " Threshold: {} | BlurFactor: {} | Erode/Dilate: {}/{} | ErodeFirst: {} | EdgeBoost: {}".format(
+        fps, mode, colors[channel], threshold, blur_factor, erode_str, dilate_str, erode_first, edge_boost)
+    cv2.putText(image, annotation_str, (10, 30),
+                fontFace=cv2.QT_FONT_NORMAL, fontScale=0.6, color=(255,255,255))
 
-    cv2.rectangle(img, (0, 0), (20, 20), (0, 0, 0), -1)
-    cv2.putText(img, str(mode), (10, 30),
-                fontFace=cv2.QT_FONT_NORMAL, fontScale=0.75, color=(255,255,255))
+
+    # Show the image
+    if not pause:
+        if invert:
+            cv2.imshow('EdgeDetector', np.clip(255 - image, 0, 255))
+        else:
+            cv2.imshow('EdgeDetector', image)
 
 cam.release()
 cv2.destroyAllWindows()
